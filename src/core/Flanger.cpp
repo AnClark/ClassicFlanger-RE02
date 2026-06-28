@@ -2,17 +2,6 @@
 #include <cmath>
 #include <cstring>
 
-float Flanger::calc_lfo_value(int counter)
-{
-    // The 32-bit signed counter naturally wraps around due to integer overflow,
-    // providing a continuous phase signal. Map it to a floating-point phase angle
-    // in the range [-π, π). Scaling factor ~1.462918e-9 derived from π / 2^31.
-    float phase = (float)counter * (M_PI / 2147483648.0f);
-    
-    // Generate a pure sine wave oscillation. Output is strictly bounded to [-1.0, 1.0].
-    return sinf(phase);
-}
-
 void Flanger::recalculate_params()
 {
     auto st = this; // "st" means "State" (current Flanger DSP state)
@@ -36,9 +25,8 @@ void Flanger::recalculate_params()
     st->delay_mask = DELAY_LINE_SIZE - 1;
     
     /* Calculate LFO step */
-    st->lfo_step = (int)(st->params[pParamRate] * CONST_2147483648 / (sr * (float)OVERSAMPLE));
-    if (st->lfo_step < 1) st->lfo_step = 1;
-    
+    lfo.calculate_lfo_step(st->params[pParamRate], sr, OVERSAMPLE);
+
     /* Configure anti-aliasing low-pass filter cutoff at ~18 kHz, correcting prior
        implementations that erroneously tied the cutoff to the LFO frequency. */
     float fc = INITIAL_LOW_PASS_FILTER_CUTOFF;
@@ -136,11 +124,10 @@ void Flanger::process_sample(float in_l, float in_r, float* out_l, float* out_r)
         st->delay_line_r[wp] = f2_out_r;
 
         /* 5. Advance LFO phase counter during oversampled processing. */
-        st->lfo_counter += st->lfo_step;
-        st->lfo_value = calc_lfo_value(st->lfo_counter);
-        
+        const float lfo_value = lfo.generate_lfo();
+
         /* 6. Apply depth parameter to scale LFO modulation around a center point (1.0 + depth×LFO). */
-        float lfo_mod = 1.0f + st->params[pParamDepth] * st->lfo_value;
+        float lfo_mod = 1.0f + st->params[pParamDepth] * lfo_value;
         if (lfo_mod < 0.05f) // Clamp minimum to prevent negative delay.
             lfo_mod = 0.05f;
         
@@ -220,6 +207,7 @@ void Flanger::reset_dsp()
     st->feedback_l = st->feedback_r = 0.0f;
     st->temp_l = st->temp_r = 0.0f;
     st->temp2_l = st->temp2_r = 0.0f;
-    st->lfo_counter = 0;
     st->write_pos = 0;
+
+    lfo.reset();    
 }
