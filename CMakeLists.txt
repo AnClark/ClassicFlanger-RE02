@@ -7,7 +7,14 @@ project (ClassicFlanger_RE02
 
 add_subdirectory (dpf)
 
-include_directories (src)
+include_directories (
+    src
+    widgets/dpf-imgui
+    widgets/dpf-imgui/DearImGui
+    widgets/imgui-ext
+    widgets/imgui-knobs-mod
+    ${PROJECT_BINARY_DIR}
+)
 
 dpf_add_plugin (${PROJECT_NAME}
     TARGETS vst2 vst3 lv2 clap
