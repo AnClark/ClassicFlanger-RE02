@@ -7,11 +7,35 @@ project (ClassicFlanger_RE02
 
 add_subdirectory (dpf)
 
-include_directories (src)
+configure_file (src/config.h.in ${PROJECT_BINARY_DIR}/config.h @ONLY)
+
+option (CONFIG_BUILD_JACK_STANDALONE "Build JACK standalone format (for debugging)")
+if (CONFIG_BUILD_JACK_STANDALONE)
+    set (TARGET_JACK jack)
+endif ()
+
+include_directories (
+    src
+    widgets/dpf-imgui
+    widgets/dpf-imgui/DearImGui
+    widgets/imgui-ext
+    widgets/imgui-knobs-mod
+    ${PROJECT_BINARY_DIR}
+)
 
 dpf_add_plugin (${PROJECT_NAME}
-    TARGETS vst2 vst3 lv2 clap
+    TARGETS vst2 vst3 lv2 clap ${TARGET_JACK}
     FILES_DSP
         src/ClassicFlangerPlugin.cpp
         src/core/Flanger.cpp
+    FILES_UI
+        src/UI.cpp
+        src/PresetManager.cpp
+        src/ui/UIChassis.cpp
+        src/ui/UISubroutines.cpp
+        src/ui/PresetManagerWindow.cpp
+        src/ui/FileBrowserStuff.cpp
+        src/ui/MessageBoxStuff.cpp
+        widgets/dpf-imgui/DearImGui.cpp
+        widgets/imgui-knobs-mod/imgui-knobs.cpp
 )
