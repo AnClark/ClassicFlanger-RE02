@@ -75,7 +75,8 @@ private:
     NoiseGenerator noise_generator;
 
     /** @brief LFO generator. */
-    LFO lfo;
+    LFO lfo;    //< For left channel & non-spreaded stereo sound
+    LFO lfo2;   //< For right channel
 
     /**
      * @brief Linear interpolation helper.

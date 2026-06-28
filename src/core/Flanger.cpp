@@ -27,6 +27,10 @@ void Flanger::recalculate_params()
     /* Calculate LFO step */
     lfo.calculate_lfo_step(st->params[pParamRate], sr, OVERSAMPLE);
 
+    /* Set LFO phase offset */
+    lfo.set_phase(0.0f);                            // Left channel has no offset
+    lfo2.set_phase(st->params[pParamStereoPhase]);  // Right channel has offset configured by user
+
     /* Configure anti-aliasing low-pass filter cutoff at ~18 kHz, correcting prior
        implementations that erroneously tied the cutoff to the LFO frequency. */
     float fc = INITIAL_LOW_PASS_FILTER_CUTOFF;
@@ -124,27 +128,44 @@ void Flanger::process_sample(float in_l, float in_r, float* out_l, float* out_r)
         st->delay_line_r[wp] = f2_out_r;
 
         /* 5. Advance LFO phase counter during oversampled processing. */
-        const float lfo_value = lfo.generate_lfo();
+        const float lfo_value = lfo.generate_lfo();         // Left channel & non-spreaded stereo
+        const float lfo_value_ch2 = lfo2.generate_lfo();    // Right channel ("ch2" means "2nd channel")
 
         /* 6. Apply depth parameter to scale LFO modulation around a center point (1.0 + depth×LFO). */
         float lfo_mod = 1.0f + st->params[pParamDepth] * lfo_value;
         if (lfo_mod < 0.05f) // Clamp minimum to prevent negative delay.
             lfo_mod = 0.05f;
+
+        float lfo_mod_ch2 = 1.0f + st->params[pParamDepth] * lfo_value_ch2;
+        if (lfo_mod_ch2 < 0.05f) // Clamp minimum to prevent negative delay.
+            lfo_mod_ch2 = 0.05f;
         
         /* Compute delay in 2× oversampled domain. */
         const float delay_samples_2x = lfo_mod * st->max_delay * (float)OVERSAMPLE;
+        const float delay_samples_2x_ch2 = lfo_mod_ch2 * st->max_delay * (float)OVERSAMPLE;
         
         /* Split delay into integer and fractional parts for linear interpolation. */
         const int delay_int = (int)delay_samples_2x;
         float frac = delay_samples_2x - (float)delay_int;
+
+        const int delay_int_ch2 = (int)delay_samples_2x_ch2;
+        float frac_ch2 = delay_samples_2x_ch2 - (float)delay_int_ch2;       
         
         /* 7. Read from delay line with linear interpolation. rp1 points to older sample (rp-1),
            ensuring correct interpolation direction to eliminate clicking artifacts. */
         const uint16_t rp = (st->write_pos - delay_int) & st->delay_mask;
-        const uint16_t rp1 = (rp - 1) & st->delay_mask; 
-        
+        const uint16_t rp1 = (rp - 1) & st->delay_mask;
+
+        const uint16_t rp_ch2 = (st->write_pos - delay_int_ch2) & st->delay_mask;
+        const uint16_t rp1_ch2 = (rp_ch2 - 1) & st->delay_mask;
+
+        const bool is_spread_mode = (st->params[pParamSpread] >= 0.5f);
+
         const float wet_l = st->delay_line_l[rp] * (CONST_1_0 - frac) + st->delay_line_l[rp1] * frac;
-        const float wet_r = st->delay_line_r[rp] * (CONST_1_0 - frac) + st->delay_line_r[rp1] * frac;
+        const float wet_r = st->delay_line_r[is_spread_mode ? rp_ch2 : rp] *
+            (CONST_1_0 - (is_spread_mode ? frac_ch2 : frac)) +
+            st->delay_line_r[is_spread_mode ? rp1_ch2 : rp1] *
+            (is_spread_mode ? frac_ch2 : frac);
 
         /* 8. Compute feedback path with tanh saturation for soft clipping. */
         // Apply independent stereo Direct Form II low-pass filters to the feedback path,

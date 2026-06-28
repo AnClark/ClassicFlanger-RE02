@@ -21,6 +21,8 @@ enum Parameters
     pParamFeedback,
     pParamMix,
     pParamLevel,
+    pParamSpread,
+    pParamStereoPhase,
     NUM_PARAMS  ///< Total number of parameters.
 };
 
@@ -55,7 +57,9 @@ static const ParamInfo paramInfo[NUM_PARAMS] = {
     { "Depth",       "",      0.0f,  1.0f, 0.5f,   0 },  ///< pParamDepth
     { "Feedback",    "",     -1.0f,1.0f, 0.0f,    0 },  ///< pParamFeedback
     { "Mix",         "",      0.0f,  1.0f, 0.5f,   0 },  ///< pParamMix
-    { "Level",       "dB",    -24.0f, 6.0f,   0.0f,   0 }   ///< pParamLevel
+    { "Level",       "dB",    -24.0f, 6.0f,   0.0f,   0 },   ///< pParamLevel
+    { "Spread",      "",       0.0f,   1.0f,   0.0f,   1},   ///< pParamSpread
+    { "Stereo Phase", "",   0.0f,      180.0f, 90.0f,   0}  ///< pParamStereoPhase
 };
 
 #endif // STRUCTURES_H_INCLUDED
