@@ -180,10 +180,12 @@ void Flanger::process_sample(float in_l, float in_r, float* out_l, float* out_r)
         // Retrieve feedback amount as a normalized value in [-1.0, 1.0] from the DPF framework.
         const float fb_amount = st->params[pParamFeedback];   
         
-        // Apply tanh saturation with gain staging (0.5× internal, 2.0× external)
+        // Apply tanh saturation with gain staging (0.5× internal, 1.5× external)
         // for smooth, tube-like soft clipping behavior.
-        float fb_sat_l = tanhf(filtered_fb_l * fb_amount * 0.5f) * 2.0f;
-        float fb_sat_r = tanhf(filtered_fb_r * fb_amount * 0.5f) * 2.0f;
+        // NOTE: Too large external gain (e.g. 2.0f) produces too noisy feedback sound.
+        //       1.5f is a gentle gain value which resembles the original behavior.
+        float fb_sat_l = tanhf(filtered_fb_l * fb_amount * 0.5f) * 1.5f;
+        float fb_sat_r = tanhf(filtered_fb_r * fb_amount * 0.5f) * 1.5f;
         
         st->feedback_l = fb_sat_l;
         st->feedback_r = fb_sat_r;
