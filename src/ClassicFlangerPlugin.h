@@ -4,6 +4,7 @@
 #include "DistrhoPlugin.hpp"
 #include "Structures.hpp"
 #include "core/Flanger.hpp"
+#include "config.h"
 
 /**
  * @file ClassicFlangerPlugin.h
@@ -42,7 +43,7 @@ protected:
     const char* getLicense() const override { return "GPLv3+"; }
 
     /** @brief Returns the plugin version as a packed integer (1.0.0). */
-    uint32_t    getVersion() const override { return d_version(1, 0, 0); }
+    uint32_t    getVersion() const override { return d_version(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH); }
 
     // ── Parameters ────────────────────────────────────────────────────────
 

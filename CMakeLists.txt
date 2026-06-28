@@ -7,6 +7,8 @@ project (ClassicFlanger_RE02
 
 add_subdirectory (dpf)
 
+configure_file (src/config.h.in ${PROJECT_BINARY_DIR}/config.h @ONLY)
+
 include_directories (
     src
     widgets/dpf-imgui
