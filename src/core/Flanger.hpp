@@ -3,6 +3,7 @@
 
 #include "../Defines.hpp"
 #include "../Structures.hpp"
+#include "LFO.hpp"
 #include "NoiseGenerator.hpp"
 
 /**
@@ -31,17 +32,6 @@ private:
     unsigned short write_pos;
     /** @brief Wrap mask used for delay buffer indexing. */
     unsigned short delay_mask;
-    
-    /** @brief LFO phase accumulator (unused in current implementation). */
-    unsigned short lfo_phase;
-    /** @brief Integer phase counter for the LFO. */
-    int lfo_counter;
-    /** @brief Phase increment per sample for the LFO. */
-    int lfo_step;
-    /** @brief Target LFO phase value for internal control. */
-    int lfo_target;
-    /** @brief Current LFO output value in [-1.0, 1.0]. */
-    float lfo_value;
     
     /** @brief Stereo delay buffers used by the flanger. */
     float delay_line_l[DELAY_LINE_SIZE] { 0.0f };
@@ -84,6 +74,10 @@ private:
     /** @brief Internal noise generator used for dither. */
     NoiseGenerator noise_generator;
 
+    /** @brief LFO generator. */
+    LFO lfo;    //< For left channel & non-spreaded stereo sound
+    LFO lfo2;   //< For right channel
+
     /**
      * @brief Linear interpolation helper.
      * @param a Value at t = 0.
@@ -95,13 +89,6 @@ private:
     {
         return a + (b - a) * t;
     }
-
-    /**
-     * @brief Calculate LFO output from the integer phase counter.
-     * @param counter Integer LFO phase counter.
-     * @return Sine output in the range [-1.0, 1.0].
-     */
-    float calc_lfo_value(int counter);
 
 public:
     /**
