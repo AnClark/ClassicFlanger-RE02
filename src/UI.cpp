@@ -188,7 +188,7 @@ void ClassicFlangerUI::onImGuiDisplay()
 
             ImGui::SameLine(0.0f, 22.0f);
 
-            if (_BeginSection("MODULATION", 80.0f * 4 - 8.0f))
+            if (_BeginSection("MODULATION", 80.0f * 5 - 4.0f))
             {
                 ImGui::Dummy(ImVec2(6.0f, 0.0f));
                 ImGui::SameLine();
@@ -202,6 +202,22 @@ void ClassicFlangerUI::onImGuiDisplay()
 
                 ImGui::SameLine(0.0f, 28.0f);
                 _addKnob(pParamFeedback, " FEEDBACK (%)", kFeedbackMarks, IM_ARRAYSIZE(kFeedbackMarks), false, false, 0.0f, "%.2f");
+
+                ImGui::SameLine(0.0f, 16.0f);
+                _addBinaryStateSwitch(pParamBalancedFeedback, "STEREO FB.", "SPR.", "BAL.", 4.0f, 6.0f);
+
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal | ImGuiHoveredFlags_NoSharedDelay))
+                {
+                    const char* balancedFeedbackHelpText = "Stereo feedback mode:\n\n"
+                                      "- SPR. (Separated): Each channel has its own feedback signal.\n"
+                                      "- BAL. (Balanced): The feedback signal is shared between channels\n"
+                                      "  for a more balanced stereo effect.";
+
+                    ImGui::SetNextWindowPos(ImVec2(ImGui::GetCursorPosX() - 80.0f, 10.0f));
+                    ImGui::BeginTooltip();
+                    ImGui::TextUnformatted(balancedFeedbackHelpText);
+                    ImGui::EndTooltip();
+                }
 
                 _EndSection();
             }
