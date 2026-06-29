@@ -24,18 +24,18 @@ using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 // ── Factory presets ────────────────────────────────────────────────────────
-// Preset fields (struct order): Name, DelayMs, Rate, Depth, Feedback, Mix, StereoPhase, Level, Spread
+// Preset fields (struct order): Name, DelayMs, Rate, Depth, Feedback, Mix, StereoPhase, Level, Spread, BalancedFeedback
 static const Preset kFactoryPresets[] = {
-    {"Elec. Guitar",   1.6f,  1.17f, 0.5f,  0.5f,  0.5f,  90.0f,  0.0f, 0.0f},
-    {"Subtle Flange",  5.0f,  0.50f, 0.25f, 0.3f,  0.35f, 90.0f,  0.0f, 0.0f},
-    {"Deep Flange",    3.0f,  0.30f, 0.75f, 0.5f,  0.5f,  90.0f,  0.0f, 0.0f},
-    {"Jet Flange",     1.5f,  0.15f, 0.90f, 0.75f, 0.6f,  90.0f,  0.0f, 0.0f},
-    {"Vibrato",        3.0f,  2.00f, 1.00f, 0.0f,  1.0f,  0.0f,   0.0f, 0.0f},
-    {"Chorus-ish",     8.0f,  1.20f, 0.50f, 0.2f,  0.4f,  90.0f,  0.0f, 1.0f},
-    {"Saw Madness",    2.5f,  1.50f, 0.60f, 0.5f,  0.5f,  90.0f,  0.0f, 0.0f},
-    {"Wide Stereo",    4.0f,  0.70f, 0.40f, 0.4f,  0.45f, 180.0f, 0.0f, 1.0f},
-    {"Resonant",       2.0f,  0.40f, 0.50f, 0.85f, 0.5f,  90.0f,  0.0f, 0.0f},
-    {"Punchy Up",      3.5f,  0.90f, 0.45f, 0.2f,  0.6f,  90.0f,  3.0f, 1.0f},
+    {"Elec. Guitar",   1.6f,  1.17f, 0.5f,  0.5f,  0.5f,  90.0f,  0.0f, 0.0f, 1.0f},
+    {"Subtle Flange",  5.0f,  0.50f, 0.25f, 0.3f,  0.35f, 90.0f,  0.0f, 0.0f, 0.0f},
+    {"Deep Flange",    3.0f,  0.30f, 0.75f, 0.5f,  0.5f,  90.0f,  0.0f, 0.0f, 0.0f},
+    {"Jet Flange",     1.5f,  0.15f, 0.90f, 0.75f, 0.6f,  90.0f,  0.0f, 0.0f, 1.0f},
+    {"Vibrato",        3.0f,  2.00f, 1.00f, 0.0f,  1.0f,  0.0f,   0.0f, 0.0f, 0.0f},
+    {"Chorus-ish",     8.0f,  1.20f, 0.50f, 0.2f,  0.4f,  90.0f,  0.0f, 1.0f, 1.0f},
+    {"Saw Madness",    2.5f,  1.50f, 0.60f, 0.5f,  0.5f,  90.0f,  0.0f, 0.0f, 0.0f},
+    {"Wide Stereo",    4.0f,  0.70f, 0.40f, 0.4f,  0.45f, 180.0f, 0.0f, 1.0f, 1.0f},
+    {"Resonant",       2.0f,  0.40f, 0.50f, 0.85f, 0.5f,  90.0f,  0.0f, 0.0f, 0.0f},
+    {"Punchy Up",      3.5f,  0.90f, 0.45f, 0.2f,  0.6f,  90.0f,  3.0f, 1.0f, 1.0f},
 };
 static constexpr int kFactoryPresetsCount = (int)(sizeof(kFactoryPresets) / sizeof(kFactoryPresets[0]));
 
@@ -210,6 +210,7 @@ bool PresetManager::importFromFile(const std::string& filePath)
         fImportedPreset.stereoPhase = j.value("stereo_phase", kDefaultPreset.stereoPhase);
         fImportedPreset.level       = j.value("level",        kDefaultPreset.level);
         fImportedPreset.spread      = j.value("spread",       kDefaultPreset.spread);
+        fImportedPreset.balancedFeedback = j.value("balanced_feedback", kDefaultPreset.balancedFeedback);
         selectImportedPreset();
         return true;
     } catch (...) {
@@ -234,6 +235,7 @@ bool PresetManager::exportCurrentToFile(const std::string& filePath)
         j["stereo_phase"]  = p->stereoPhase;
         j["level"]         = p->level;
         j["spread"]        = p->spread;
+        j["balanced_feedback"] = p->balancedFeedback;
         std::ofstream f(filePath);
         if (!f.is_open()) return false;
         f << j.dump(4);
@@ -274,6 +276,7 @@ bool PresetManager::loadUserPresetsFromDisk()
             p.stereoPhase   = entry.value("stereo_phase",   kDefaultPreset.stereoPhase);
             p.level         = entry.value("level",          kDefaultPreset.level);
             p.spread        = entry.value("spread",         kDefaultPreset.spread);
+            p.balancedFeedback = entry.value("balanced_feedback", kDefaultPreset.balancedFeedback);
             if (!p.name.empty())
                 fUserPresets.push_back(std::move(p));
         }
@@ -302,6 +305,7 @@ bool PresetManager::saveUserPresetsToDisk()
             entry["stereo_phase"]  = p.stereoPhase;
             entry["level"]         = p.level;
             entry["spread"]        = p.spread;
+            entry["balanced_feedback"] = p.balancedFeedback;
             arr.push_back(entry);
         }
         json j;
@@ -386,6 +390,7 @@ Preset PresetManager::snapshotFromUI() const
     p.stereoPhase = fUI->fParams[pParamStereoPhase];
     p.level       = fUI->fParams[pParamLevel];
     p.spread      = fUI->fParams[pParamSpread];
+    p.balancedFeedback = fUI->fParams[pParamBalancedFeedback];
     return p;
 }
 
@@ -435,6 +440,7 @@ void PresetManager::_applyPreset(const Preset& preset)
     _triggerParamUpdate(pParamStereoPhase, preset.stereoPhase);
     _triggerParamUpdate(pParamLevel,       preset.level);
     _triggerParamUpdate(pParamSpread,      preset.spread);
+    _triggerParamUpdate(pParamBalancedFeedback, preset.balancedFeedback);
 }
 
 void PresetManager::_triggerParamUpdate(uint32_t index, float value)

@@ -174,10 +174,24 @@ void Flanger::process_sample(float in_l, float in_r, float* out_l, float* out_r)
         // Apply independent stereo Direct Form II low-pass filters to the feedback path,
         // preventing instability and howling at high feedback gains.
         //
-        // NOTICE: Use non-spreaded (without time offset) wet signal for feedback loop rather than spreaded one,
-        //         otherwise you may hear feedback resonance on only one channel.
-        const float fb_in_l = wet_l;
-        const float fb_in_r = wet_r_nonspreaded;
+        // IMPROVED: Add a user-selectable option to choose between balanced stereo feedback and channel-separated feedback.
+        //   - If the user enables balanced feedback, DSP will derive both feedback signals from a shared (blended) reference.
+        //     This ensures symmetric feedback behavior across stereo channels while maintaining independent filtering
+        //     and saturation per channel.
+        //   - If the user disables balanced feedback, DSP will prefer original behavior: each channel uses its own non-spreaded
+        //     reference (channel-separated feedback).
+        //     This maintains independent feedback per channel, preventing one-sided resonance.
+        //
+        // NOTICE: No matter which feedback mode is selected, use the non-spreaded (without time offset) wet signal for the feedback loop
+        //         rather than the spreaded one, otherwise you may hear feedback resonance on only one channel.
+        //
+        // TIPS: To find out how the feedback mode affects the sound, try testing with a high feedback value, and a mono input signal
+        //       (e.g. a clean electric jazz guitar with NO reverb).
+        const bool is_balanced_feedback_enabled = (st->params[pParamBalancedFeedback] >= 0.5f);
+        const float fb_ref = (wet_l + wet_r_nonspreaded) * CONST_0_5;  // Average of non-spreaded signals
+
+        const float fb_in_l = is_balanced_feedback_enabled ? fb_ref : wet_l;
+        const float fb_in_r = is_balanced_feedback_enabled ? fb_ref : wet_r_nonspreaded;
 
         // Left channel: Direct Form II state update.
         const float w_fb_l = fb_in_l - st->coef_d0 * st->temp_l - st->coef_d1 * st->temp2_l;

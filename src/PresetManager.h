@@ -29,6 +29,7 @@ struct Preset
     float stereoPhase = paramInfo[pParamStereoPhase].defaultVal;
     float level       = paramInfo[pParamLevel].defaultVal;
     float spread      = paramInfo[pParamSpread].defaultVal;
+    float balancedFeedback = paramInfo[pParamBalancedFeedback].defaultVal;
 
     inline std::string getUniqueButtonID() const {
         // Generate a unique ID for ImGui buttons based on the preset name.
