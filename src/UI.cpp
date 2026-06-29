@@ -86,14 +86,16 @@ static const ImGuiKnobs_Mod::KnobScaleMark kMixMarks[] = {
 
 static const ImGuiKnobs_Mod::KnobScaleMark kLevelMarks[] = {
     {  -24.0f, "-24" },
-    {  -18.0f, nullptr },
-    {  -12.0f, nullptr },
-    {   -6.0f, nullptr },
-    {    0.0f, "0" },
-    {    1.5f, nullptr },
-    {    3.0f, nullptr },
-    {    4.5f, nullptr },
-    {    6.0f, "6" },
+    { -21.0f, nullptr },
+    { -18.0f, "-18" },
+    { -15.0f, nullptr },
+    { -12.0f, nullptr },
+    {  -9.0f, "-9" },
+    {  -6.0f, nullptr },
+    {  -3.0f, nullptr },
+    {   0.0f, "0" },
+    {   3.0f, nullptr },
+    {   6.0f, "+6" },
 };
 
 ClassicFlangerUI::ClassicFlangerUI()
@@ -233,10 +235,10 @@ void ClassicFlangerUI::onImGuiDisplay()
                 ImGui::SameLine(0.0f, 24.0f);
                 _addKnob(pParamMix, "MIX", kMixMarks, IM_ARRAYSIZE(kMixMarks), false, false, 0.0f, "%.2f");
 
-                ImGui::SameLine(0.0f, 32.0f);
+                ImGui::SameLine(0.0f, 36.0f);
                 _addKnob(pParamLevel, " LEVEL (dB)", kLevelMarks, IM_ARRAYSIZE(kLevelMarks),
                         false,
-                        true,
+                        false,
                         0.0f,
                         "%.4f"
                 );
@@ -244,7 +246,7 @@ void ClassicFlangerUI::onImGuiDisplay()
                 _EndSection();
             }
 
-            ImGui::SameLine(0.0f, 20.0f);
+            ImGui::SameLine(0.0f, 24.0f);
 
             {
                 ImGui::BeginGroup();
