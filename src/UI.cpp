@@ -198,7 +198,7 @@ void ClassicFlangerUI::onImGuiDisplay()
                 _addKnob(pParamDepth, " DEPTH (%)", kDepthMarks, IM_ARRAYSIZE(kDepthMarks), false, false, 0.0f, "%.2f");
 
                 ImGui::SameLine(0.0f, 20.0f);
-                _addBinaryStateSwitch(pParamSpread, " SPREAD", "ON", "OFF", 2.0f, 1.0f);
+                _addBinaryStateSwitch(pParamSpread, " SPREAD", "OFF", "ON", 2.0f, 1.0f);
 
                 ImGui::SameLine(0.0f, 28.0f);
                 _addKnob(pParamFeedback, " FEEDBACK (%)", kFeedbackMarks, IM_ARRAYSIZE(kFeedbackMarks), false, false, 0.0f, "%.2f");
