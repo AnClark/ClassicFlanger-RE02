@@ -167,12 +167,18 @@ void Flanger::process_sample(float in_l, float in_r, float* out_l, float* out_r)
             st->delay_line_r[is_spread_mode ? rp1_ch2 : rp1] *
             (is_spread_mode ? frac_ch2 : frac);
 
+        // Wet signal without time offset (spreading). See Step 8 below.
+        const float wet_r_nonspreaded = st->delay_line_r[rp] * (CONST_1_0 - frac) + st->delay_line_r[rp1] * frac;
+
         /* 8. Compute feedback path with tanh saturation for soft clipping. */
         // Apply independent stereo Direct Form II low-pass filters to the feedback path,
         // preventing instability and howling at high feedback gains.
+        //
+        // NOTICE: Use non-spreaded (without time offset) wet signal for feedback loop rather than spreaded one,
+        //         otherwise you may hear feedback resonance on only one channel.
         const float fb_in_l = wet_l;
-        const float fb_in_r = wet_r;
-        
+        const float fb_in_r = wet_r_nonspreaded;
+
         // Left channel: Direct Form II state update.
         const float w_fb_l = fb_in_l - st->coef_d0 * st->temp_l - st->coef_d1 * st->temp2_l;
         float filtered_fb_l = st->coef_c0 * w_fb_l + st->coef_c1 * st->temp_l + st->coef_c2 * st->temp2_l;
