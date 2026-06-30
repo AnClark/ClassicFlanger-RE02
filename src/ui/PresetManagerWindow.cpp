@@ -326,8 +326,10 @@ void ClassicFlangerUI::_drawPresetManager()
             }
             ImGui::Separator();
 
+            // NOTE: Prefer 3-column layout for user preset list, since the UI has been much wider.
+            constexpr float CONST_1_DIV_3 = 1.0f / 3.0f;
             const float innerW = ImGui::GetContentRegionAvail().x;
-            const float btnW   = (innerW - gap) * 0.5f;
+            const float btnW   = (innerW - gap) * CONST_1_DIV_3;
 
             // Height available for the preset list (below header, above action row + status)
             const float listH = ImGui::GetContentRegionAvail().y
@@ -343,7 +345,7 @@ void ClassicFlangerUI::_drawPresetManager()
 
                 for (int i = 0; i < fPresetManager->userPresetCount(); ++i)
                 {
-                    if (i % 2 != 0) ImGui::SameLine();
+                    if (i % 3 != 0) ImGui::SameLine();
 
                     const Preset& p   = fPresetManager->userPreset(i);
                     const bool    sel = (fPresetManager->currentType()  == PresetType::User &&
