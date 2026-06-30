@@ -198,7 +198,7 @@ void ClassicFlangerUI::_drawPresetManager()
             ImGui::TextDisabled("USER PRESETS");
             // NOTE: For convenience, I use hard-coded spacing here.
             //       FIXME: Shall I compute the spacing from style metrics instead?
-            ImGui::SameLine(0, 150.0f);
+            ImGui::SameLine(0, 200.0f + 8.0f);
 
             // ── Action buttons (At the same line of the title) ─────────────────────────────
             {
